@@ -86,7 +86,56 @@ npm install -g @modelcontextprotocol/server-atlassian
 
 ## 선택 MCP 서버 (필요시)
 
-### 3. google-docs (Google Docs 연동)
+### 3. slack (Slack 메시지 검색 및 연동)
+
+**용도**: Slack 채널 메시지 조회, 팀 커뮤니케이션 기록 수집
+
+**설치 방법**:
+```bash
+npm install -g @modelcontextprotocol/server-slack
+```
+
+**Claude Code 설정**:
+`~/.claude/config.json`에 추가:
+```json
+{
+  "mcpServers": {
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "xoxb-your-bot-token",
+        "SLACK_TEAM_ID": "T01234567"
+      }
+    }
+  }
+}
+```
+
+**Slack App 및 Bot Token 생성**:
+1. https://api.slack.com/apps 접속
+2. "Create New App" 클릭 → "From scratch" 선택
+3. App Name 입력 (예: "Work Journal Bot")
+4. Workspace 선택
+5. "OAuth & Permissions" 메뉴로 이동
+6. "Bot Token Scopes" 섹션에서 필요한 권한 추가:
+   - `channels:history` - 공개 채널 메시지 읽기
+   - `channels:read` - 채널 정보 조회
+   - `groups:history` - 비공개 채널 메시지 읽기 (선택)
+   - `im:history` - DM 메시지 읽기 (선택)
+   - `users:read` - 사용자 정보 조회
+7. "Install to Workspace" 클릭
+8. 생성된 "Bot User OAuth Token" (xoxb-로 시작)을 복사하여 `SLACK_BOT_TOKEN`에 입력
+9. Workspace URL에서 Team ID 확인 (예: T01234567)
+
+**활용 예시**:
+- 특정 채널의 이번 주 메시지 조회
+- 프로젝트 관련 대화 내용 요약
+- 팀 커뮤니케이션 히스토리 검색
+
+---
+
+### 4. google-docs (Google Docs 연동)
 
 **용도**: Weekly Flash Report 등 Google Docs 문서 자동 생성
 
@@ -119,7 +168,7 @@ npm install -g @modelcontextprotocol/server-google-docs
 
 ## 전체 설정 예시
 
-`~/.claude/config.json` 전체 예시:
+`~/.claude/config.json` 전체 예시 (필수 + 선택 MCP 서버):
 
 ```json
 {
@@ -138,6 +187,14 @@ npm install -g @modelcontextprotocol/server-google-docs
         "ATLASSIAN_API_TOKEN": "your-api-token",
         "ATLASSIAN_USER_EMAIL": "your-email@company.com",
         "ATLASSIAN_SITE_URL": "https://your-site.atlassian.net"
+      }
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "xoxb-your-bot-token",
+        "SLACK_TEAM_ID": "T01234567"
       }
     }
   }
@@ -182,6 +239,17 @@ pm2 logs claude-mem
 2. Email 주소가 JIRA 계정과 일치하는지 확인
 3. Site URL이 정확한지 확인 (https 포함)
 
+### Slack 연동이 안 될 때
+
+1. Bot Token이 올바른지 확인 (xoxb-로 시작해야 함)
+2. Bot이 조회하려는 채널에 초대되었는지 확인
+   - Slack에서 해당 채널로 이동
+   - `/invite @[your-bot-name]` 명령어로 봇 초대
+3. Bot Token Scopes 권한 확인:
+   - `channels:history`, `channels:read` 필수
+   - 비공개 채널 접근 시 `groups:history` 필요
+4. Team ID 확인 (Workspace URL에서 확인 가능)
+
 ### MCP 서버가 인식되지 않을 때
 
 ```bash
@@ -200,3 +268,5 @@ npx jsonlint ~/.claude/config.json
 - [Claude MCP 공식 문서](https://modelcontextprotocol.io/)
 - [claude-mem GitHub](https://github.com/anthonychu/claude-mem)
 - [Atlassian API Token 관리](https://id.atlassian.com/manage-profile/security/api-tokens)
+- [Slack API Apps](https://api.slack.com/apps)
+- [Slack Bot Token Scopes](https://api.slack.com/scopes)
